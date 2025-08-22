@@ -1,0 +1,53 @@
+services:
+  currencies-mocks:
+    image: "${MOCKS_IMAGE}:${MOCKS_TAG}"
+    container_name: "${MOCKS_CONTAINER_NAME}"
+    ports:
+      - "${MOCKS_PORT}:${MOCKS_INTERNAL_PORT}"
+    restart: unless-stopped
+
+  postgres:
+    image: "${POSTGRES_IMAGE}:${POSTGRES_TAG}"
+    container_name: "${POSTGRES_CONTAINER_NAME}"
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_INTERNAL_PORT}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -p ${POSTGRES_INTERNAL_PORT}"]
+      interval: "${POSTGRES_HEALTHCHECK_INTERVAL}"
+      timeout: "${POSTGRES_HEALTHCHECK_TIMEOUT}"
+      retries: ${POSTGRES_HEALTHCHECK_RETRIES}
+    restart: unless-stopped
+
+  currency-rates-service:
+    build:
+      context: "${APP_BUILD_CONTEXT}"
+      dockerfile: "${APP_DOCKERFILE}"
+    image: "${APP_IMAGE_NAME}:${APP_IMAGE_TAG}"
+    container_name: "${APP_CONTAINER_NAME}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      currencies-mocks:
+        condition: service_started
+    environment:
+      SPRING_R2DBC_URL: "r2dbc:postgresql://postgres:${POSTGRES_INTERNAL_PORT}/${POSTGRES_DB}"
+      SPRING_R2DBC_USERNAME: "${POSTGRES_USER}"
+      SPRING_R2DBC_PASSWORD: "${POSTGRES_PASSWORD}"
+      SERVER_PORT: "${APP_PORT}"
+
+      APP_MOCKS_BASE_URL: "http://currencies-mocks:${MOCKS_INTERNAL_PORT}"
+      APP_MOCKS_FIAT_PATH: "${APP_MOCKS_FIAT_PATH}"
+      APP_MOCKS_CRYPTO_PATH: "${APP_MOCKS_CRYPTO_PATH}"
+      APP_MOCKS_API_KEY_HEADER: "${APP_MOCKS_API_KEY_HEADER}"
+      APP_MOCKS_API_KEY: "${APP_MOCKS_API_KEY}"
+
+      APP_HTTP_TIMEOUT_SECONDS: "${APP_HTTP_TIMEOUT_SECONDS}"
+      APP_HTTP_RETRY_MAX_ATTEMPTS: "${APP_HTTP_RETRY_MAX_ATTEMPTS}"
+      APP_HTTP_RETRY_BACKOFF_MS: "${APP_HTTP_RETRY_BACKOFF_MS}"
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    restart: unless-stopped

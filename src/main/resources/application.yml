@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: currency-rates-service
+  main:
+    web-application-type: reactive
+  r2dbc:
+    url: ${SPRING_R2DBC_URL:r2dbc:postgresql://localhost:5432/currency_rates}
+    username: ${SPRING_R2DBC_USERNAME:currency_user}
+    password: ${SPRING_R2DBC_PASSWORD:currency_pass_123}
+
+server:
+  port: ${SERVER_PORT:8081}
+
+app:
+  mocks:
+    base-url: ${APP_MOCKS_BASE_URL:http://localhost:8080}
+    fiat-path: ${APP_MOCKS_FIAT_PATH:/fiat-currency-rates}
+    crypto-path: ${APP_MOCKS_CRYPTO_PATH:/crypto-currency-rates}
+    api-key: ${APP_MOCKS_API_KEY:secret-key}
+    api-key-header: ${APP_MOCKS_API_KEY_HEADER:X-API-KEY}
+  http:
+    timeout-seconds: ${APP_HTTP_TIMEOUT_SECONDS:3}
+    retry-max-attempts: ${APP_HTTP_RETRY_MAX_ATTEMPTS:1}
+    retry-backoff-ms: ${APP_HTTP_RETRY_BACKOFF_MS:200}
+
+r2dbc:
+  migrate:
+    resources-paths:
+      - classpath:/db/migration/*.sql

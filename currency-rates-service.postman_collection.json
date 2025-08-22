@@ -1,0 +1,29 @@
+{
+  "info": {
+    "name": "currency-rates-service",
+    "_postman_id": "a1b4a2a3-3cd1-4fdb-82c4-0b0b02f9b9c2",
+    "description": "Collection for currency-rates-service (local environment)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET /currency-rates",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8081/currency-rates",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "currency-rates"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
